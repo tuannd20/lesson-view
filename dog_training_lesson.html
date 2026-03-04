@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dog Training – Basic Obedience</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: Georgia, serif;
+      padding: 20px;
+    }
+
+    /* ── Phone frame ── */
+    .phone {
+      width: 375px;
+      min-height: 812px;
+      background: #FAFAF8;
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 40px 80px rgba(0,0,0,.5), 0 0 0 2px #333, inset 0 0 0 1px rgba(255,255,255,.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: #fff;
+      padding: 14px 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: sans-serif;
+    }
+    .status-bar .time { font-size: 13px; font-weight: 700; }
+    .status-bar .icons { display: flex; gap: 5px; align-items: center; font-size: 11px; }
+
+    /* ── Header ── */
+    .header {
+      background: #fff;
+      padding: 12px 20px 16px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .back-btn {
+      font-size: 18px;
+      cursor: pointer;
+      color: #666;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+    .header-title { font-size: 17px; font-weight: 700; color: #1a1a1a; font-family: sans-serif; }
+
+    .lesson-pill {
+      border-radius: 10px;
+      padding: 10px 16px;
+      margin-bottom: 12px;
+    }
+    .lesson-pill p { color: #fff; font-size: 13px; font-weight: 700; font-family: sans-serif; }
+
+    .progress-wrap { display: flex; align-items: center; gap: 8px; }
+    .progress-track {
+      flex: 1; height: 6px; background: #E8E8E8; border-radius: 10px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 10px; transition: width .5s ease;
+    }
+    .progress-label { font-size: 11px; color: #888; font-family: sans-serif; white-space: nowrap; }
+
+    /* ── Body ── */
+    .body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+
+    /* ── Illustration ── */
+    .illustration-wrap {
+      margin: 16px 20px 0;
+      border-radius: 20px;
+      overflow: hidden;
+      height: 200px;
+      position: relative;
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    }
+    .illustration-wrap svg { display: block; width: 100%; height: 100%; }
+
+    .step-badge {
+      position: absolute; top: 12px; left: 12px;
+      color: #fff; border-radius: 20px; padding: 4px 12px;
+      font-size: 12px; font-weight: 700; font-family: sans-serif;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .done-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: #2ECC71; color: #fff;
+      border-radius: 50%; width: 28px; height: 28px;
+      display: none; align-items: center; justify-content: center;
+      font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .done-badge.visible { display: flex; }
+
+    /* ── Content card ── */
+    .content-card { margin: 16px 20px; flex: 1; }
+
+    .step-title {
+      font-size: 20px; font-weight: 800;
+      margin: 0 0 2px; font-family: sans-serif;
+    }
+    .step-subtitle { color: #888; font-size: 13px; margin: 0 0 10px; font-family: sans-serif; }
+
+    .step-content {
+      color: #333; font-size: 14px; line-height: 1.6;
+      margin: 0 0 12px; font-family: sans-serif;
+    }
+
+    .pro-tip {
+      border-radius: 12px; padding: 10px 14px;
+      display: flex; gap: 8px; align-items: flex-start;
+    }
+    .pro-tip .bulb { font-size: 16px; }
+    .pro-tip p { color: #555; font-size: 12px; margin: 0; font-family: sans-serif; line-height: 1.5; }
+    .pro-tip strong { }
+
+    /* ── Dots ── */
+    .dots {
+      display: flex; justify-content: center; gap: 6px; padding-bottom: 8px;
+    }
+    .dot {
+      height: 7px; border-radius: 10px; border: none; cursor: pointer;
+      padding: 0; transition: all .3s ease;
+    }
+
+    /* ── Buttons ── */
+    .actions { padding: 0 20px 32px; display: flex; flex-direction: column; gap: 10px; }
+
+    .btn-complete {
+      width: 100%; padding: 16px; border-radius: 16px; border: none;
+      color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+      font-family: sans-serif; display: flex; align-items: center;
+      justify-content: center; gap: 8px; transition: all .3s ease;
+    }
+
+    .btn-nav-row { display: flex; gap: 10px; }
+    .btn-nav {
+      flex: 1; padding: 12px; border-radius: 12px; font-size: 14px;
+      font-weight: 600; cursor: pointer; font-family: sans-serif; background: #fff;
+      transition: all .2s ease;
+    }
+    .btn-nav:disabled { cursor: not-allowed; }
+
+    /* ── Celebration overlay ── */
+    .celebration {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,.7);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 50px; z-index: 100;
+    }
+    .celebration.visible { display: flex; }
+    .celebration-inner { text-align: center; animation: bounce .5s ease; }
+    .celebration-inner .trophy { font-size: 60px; margin-bottom: 16px; }
+    .celebration-inner h2 { color: #fff; font-size: 26px; font-weight: 800; margin: 0 0 8px; font-family: sans-serif; }
+    .celebration-inner p { color: rgba(255,255,255,.8); font-size: 15px; font-family: sans-serif; }
+    .celebration-stars { margin-top: 20px; display: flex; gap: 8px; justify-content: center; font-size: 28px; }
+
+    @keyframes bounce {
+      0%   { transform: scale(.5); opacity: 0; }
+      70%  { transform: scale(1.1); }
+      100% { transform: scale(1);   opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone" id="app">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span class="time">9:41</span>
+    <div class="icons"><span>●●●●</span><span>WiFi</span><span>🔋</span></div>
+  </div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <button class="back-btn">‹</button>
+      <span class="header-title">Basic Obedience</span>
+    </div>
+    <div class="lesson-pill" id="lessonPill">
+      <p>Respond to Name &amp; Come When Called</p>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="progress-label" id="progressLabel">0/5</span>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="body">
+
+    <!-- Illustration -->
+    <div class="illustration-wrap">
+      <svg id="illustration" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="step-badge" id="stepBadge"></div>
+      <div class="done-badge" id="doneBadge">✓</div>
+    </div>
+
+    <!-- Content Card -->
+    <div class="content-card">
+      <p class="step-title" id="stepTitle"></p>
+      <p class="step-subtitle" id="stepSubtitle"></p>
+      <p class="step-content" id="stepContent"></p>
+      <div class="pro-tip" id="proTip">
+        <span class="bulb">💡</span>
+        <p><strong id="tipLabel"></strong> <span id="tipText"></span></p>
+      </div>
+    </div>
+
+    <!-- Dots -->
+    <div class="dots" id="dots"></div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn-complete" id="btnComplete"></button>
+      <div class="btn-nav-row">
+        <button class="btn-nav" id="btnPrev">‹ Previous</button>
+        <button class="btn-nav" id="btnNext">Next ›</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Celebration -->
+  <div class="celebration" id="celebration">
+    <div class="celebration-inner">
+      <div class="trophy">🏆</div>
+      <h2>Lesson Complete!</h2>
+      <p>You &amp; your pup are crushing it! 🐾</p>
+      <div class="celebration-stars">⭐⭐⭐</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────
+const lessons = [
+  {
+    step: 1,
+    title: "Teach Name → Attention",
+    subtitle: "Getting your dog to look at you",
+    color: "#FF6B35",
+    tip: "Use a happy, upbeat voice every time!",
+    content: 'Say your dog\'s name once in a happy voice. When they look at you → say "Yes!" → give a treat. Repeat 8–10 times per session.',
+    scene: "living_room",
+  },
+  {
+    step: 2,
+    title: "Reward Eye Contact",
+    subtitle: "Building focus and connection",
+    color: "#4ECDC4",
+    tip: "Keep sessions short — 5 minutes max!",
+    content: "Mark and reward immediately when they make eye contact. Your dog learns: Focus on my human = Good things happen.",
+    scene: "garden",
+  },
+  {
+    step: 3,
+    title: "Add Movement",
+    subtitle: "Making recall exciting",
+    color: "#45B7D1",
+    tip: "Run backwards — dogs love to chase!",
+    content: "Say their name → step backward. When they move toward you → reward! Make yourself exciting and inviting.",
+    scene: "park",
+  },
+  {
+    step: 4,
+    title: 'Add the Cue "Come"',
+    subtitle: "Teaching the verbal command",
+    color: "#96CEB4",
+    tip: "Always reward when they arrive — every single time!",
+    content: '"Buddy, Come!". When your dog reaches you: Mark / Treat / Praise.',
+    scene: "backyard",
+  },
+  {
+    step: 5,
+    title: "Practice & Level Up",
+    subtitle: "Building reliability",
+    color: "#E6AC00",
+    tip: "8 out of 10 successful recalls = ready for distractions!",
+    content: "Start close → Increase distance slowly. Practice indoors first, then backyard (use a long leash).",
+    scene: "outdoor",
+  },
+];
+
+const sceneColors = {
+  living_room: ["#FFF5E6", "#FFE8CC"],
+  garden:      ["#E8F5E9", "#C8E6C9"],
+  park:        ["#E3F2FD", "#BBDEFB"],
+  backyard:    ["#F3E5F5", "#E1BEE7"],
+  outdoor:     ["#FFF9C4", "#FFF176"],
+};
+
+// ─────────────────────────────────────────
+//  SVG SCENES
+// ─────────────────────────────────────────
+function buildScene(step, scene) {
+  const [bg1, bg2] = sceneColors[scene] || ["#F5F5F5","#EEEEEE"];
+
+  const svgs = [
+    // Step 1 – Living room attention
+    `<rect x="0" y="0" width="300" height="200" fill="${bg1}" rx="16"/>
+     <rect x="0" y="120" width="300" height="80" fill="${bg2}"/>
+     <ellipse cx="150" cy="175" rx="120" ry="15" fill="rgba(0,0,0,0.05)"/>
+     <circle cx="90" cy="80" r="22" fill="#FDBCB4"/>
+     <rect x="72" y="100" width="36" height="55" fill="#4A90D9" rx="8"/>
+     <rect x="68" y="150" width="14" height="30" fill="#2C3E50" rx="4"/>
+     <rect x="86" y="150" width="14" height="30" fill="#2C3E50" rx="4"/>
+     <ellipse cx="90" cy="73" rx="18" ry="16" fill="#8D5524"/>
+     <text x="108" y="119" text-anchor="middle" font-size="13">🍖</text>
+     <ellipse cx="175" cy="158" rx="35" ry="22" fill="#C8A26B"/>
+     <circle cx="175" cy="135" r="18" fill="#C8A26B"/>
+     <ellipse cx="165" cy="130" rx="6" ry="8" fill="#8B6345"/>
+     <ellipse cx="185" cy="130" rx="6" ry="8" fill="#8B6345"/>
+     <circle cx="170" cy="132" r="4" fill="#2C2C2C"/>
+     <circle cx="180" cy="132" r="4" fill="#2C2C2C"/>
+     <circle cx="171" cy="131" r="1.5" fill="white"/>
+     <circle cx="181" cy="131" r="1.5" fill="white"/>
+     <ellipse cx="175" cy="141" rx="6" ry="4" fill="#8B4513"/>
+     <text x="140" y="115" font-size="14">✨</text>
+     <text x="155" y="105" font-size="10">⭐</text>`,
+
+    // Step 2 – Eye contact
+    `<rect x="0" y="0" width="300" height="200" fill="${bg1}" rx="16"/>
+     <rect x="0" y="130" width="300" height="70" fill="${bg2}"/>
+     <circle cx="95" cy="85" r="22" fill="#FDBCB4"/>
+     <rect x="77" y="105" width="36" height="55" fill="#2ECC71" rx="8"/>
+     <ellipse cx="95" cy="78" rx="18" ry="16" fill="#6B4226"/>
+     <line x1="95" y1="90" x2="170" y2="135" stroke="#FFD700" stroke-width="2" stroke-dasharray="4,3"/>
+     <text x="130" y="115" font-size="12">👁️</text>
+     <ellipse cx="185" cy="160" rx="38" ry="24" fill="#C8A26B"/>
+     <circle cx="175" cy="138" r="18" fill="#C8A26B"/>
+     <ellipse cx="165" cy="133" rx="6" ry="8" fill="#8B6345"/>
+     <ellipse cx="185" cy="133" rx="6" ry="8" fill="#8B6345"/>
+     <circle cx="169" cy="135" r="5" fill="#2C2C2C"/>
+     <circle cx="181" cy="135" r="5" fill="#2C2C2C"/>
+     <circle cx="170" cy="134" r="2" fill="white"/>
+     <circle cx="182" cy="134" r="2" fill="white"/>
+     <text x="205" y="145" font-size="16">✨</text>
+     <text x="60"  y="120" font-size="14">🍖</text>`,
+
+    // Step 3 – Movement
+    `<rect x="0" y="0" width="300" height="200" fill="${bg1}" rx="16"/>
+     <rect x="0" y="140" width="300" height="60" fill="${bg2}"/>
+     <ellipse cx="220" cy="165" rx="25" ry="5" fill="rgba(0,0,0,0.06)"/>
+     <circle cx="220" cy="80" r="20" fill="#FDBCB4"/>
+     <rect x="204" y="98" width="32" height="50" fill="#E74C3C" rx="8"/>
+     <rect x="200" y="145" width="12" height="25" fill="#2C3E50" rx="4"/>
+     <rect x="218" y="145" width="12" height="28" fill="#2C3E50" rx="4"/>
+     <ellipse cx="220" cy="73" rx="16" ry="14" fill="#5D4037"/>
+     <path d="M190 120 L160 120 L165 115 M160 120 L165 125" stroke="#FF6B35" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+     <ellipse cx="90" cy="160" rx="40" ry="22" fill="#C8A26B"/>
+     <circle cx="85" cy="140" r="17" fill="#C8A26B"/>
+     <ellipse cx="76" cy="135" rx="5" ry="7" fill="#8B6345"/>
+     <ellipse cx="94" cy="135" rx="5" ry="7" fill="#8B6345"/>
+     <circle cx="80" cy="138" r="4" fill="#2C2C2C"/>
+     <circle cx="91" cy="138" r="4" fill="#2C2C2C"/>
+     <circle cx="81" cy="137" r="1.5" fill="white"/>
+     <circle cx="92" cy="137" r="1.5" fill="white"/>
+     <line x1="40" y1="155" x2="55" y2="155" stroke="#C8A26B" stroke-width="2" stroke-linecap="round"/>
+     <line x1="35" y1="162" x2="52" y2="162" stroke="#C8A26B" stroke-width="2" stroke-linecap="round"/>`,
+
+    // Step 4 – Come cue
+    `<rect x="0" y="0" width="300" height="200" fill="${bg1}" rx="16"/>
+     <rect x="0" y="140" width="300" height="60" fill="${bg2}"/>
+     <circle cx="230" cy="80" r="22" fill="#FDBCB4"/>
+     <rect x="212" y="100" width="36" height="55" fill="#9B59B6" rx="8"/>
+     <ellipse cx="230" cy="73" rx="18" ry="16" fill="#4A235A"/>
+     <text x="185" y="90" font-size="13">📢</text>
+     <path d="M175 75 Q165 80 175 85" stroke="#9B59B6" stroke-width="2" fill="none"/>
+     <path d="M170 68 Q155 78 170 88" stroke="#9B59B6" stroke-width="1.5" fill="none"/>
+     <ellipse cx="80" cy="160" rx="38" ry="22" fill="#C8A26B"/>
+     <circle cx="75" cy="140" r="17" fill="#C8A26B"/>
+     <ellipse cx="66" cy="135" rx="5" ry="7" fill="#8B6345"/>
+     <ellipse cx="84" cy="135" rx="5" ry="7" fill="#8B6345"/>
+     <circle cx="70" cy="138" r="4" fill="#2C2C2C"/>
+     <circle cx="81" cy="138" r="4" fill="#2C2C2C"/>
+     <circle cx="71" cy="137" r="1.5" fill="white"/>
+     <circle cx="82" cy="137" r="1.5" fill="white"/>
+     <path d="M118 155 Q130 140 125 150" stroke="#C8A26B" stroke-width="6" fill="none" stroke-linecap="round"/>
+     <path d="M125 150 L185 150 L180 145 M185 150 L180 155" stroke="#FFD700" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+
+    // Step 5 – Level up
+    `<rect x="0" y="0" width="300" height="200" fill="${bg1}" rx="16"/>
+     <rect x="0" y="135" width="300" height="65" fill="${bg2}"/>
+     <text x="20"  y="50" font-size="18">🎉</text>
+     <text x="255" y="45" font-size="16">⭐</text>
+     <text x="240" y="70" font-size="12">✨</text>
+     <text x="30"  y="75" font-size="12">🌟</text>
+     <circle cx="140" cy="78" r="22" fill="#FDBCB4"/>
+     <rect x="122" y="98" width="36" height="50" fill="#F39C12" rx="8"/>
+     <ellipse cx="140" cy="71" rx="18" ry="16" fill="#5D4037"/>
+     <ellipse cx="140" cy="165" rx="40" ry="22" fill="#C8A26B"/>
+     <circle cx="135" cy="144" r="18" fill="#C8A26B"/>
+     <ellipse cx="126" cy="139" rx="5" ry="7" fill="#8B6345"/>
+     <ellipse cx="144" cy="139" rx="5" ry="7" fill="#8B6345"/>
+     <circle cx="130" cy="142" r="4" fill="#2C2C2C"/>
+     <circle cx="141" cy="142" r="4" fill="#2C2C2C"/>
+     <circle cx="131" cy="141" r="1.5" fill="white"/>
+     <circle cx="142" cy="141" r="1.5" fill="white"/>
+     <path d="M128 150 Q135 156 143 150" stroke="#8B4513" stroke-width="2" fill="none" stroke-linecap="round"/>
+     <text x="195" y="170" font-size="22">🏆</text>`,
+  ];
+
+  return svgs[step - 1] || "";
+}
+
+// ─────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────
+let currentSlide   = 0;
+let completedSteps = [];      // array of slide indices
+
+// ─────────────────────────────────────────
+//  DOM REFS
+// ─────────────────────────────────────────
+const illustration  = document.getElementById("illustration");
+const lessonPill    = document.getElementById("lessonPill");
+const progressFill  = document.getElementById("progressFill");
+const progressLabel = document.getElementById("progressLabel");
+const stepBadge     = document.getElementById("stepBadge");
+const doneBadge     = document.getElementById("doneBadge");
+const stepTitle     = document.getElementById("stepTitle");
+const stepSubtitle  = document.getElementById("stepSubtitle");
+const stepContent   = document.getElementById("stepContent");
+const proTip        = document.getElementById("proTip");
+const tipLabel      = document.getElementById("tipLabel");
+const tipText       = document.getElementById("tipText");
+const dotsWrap      = document.getElementById("dots");
+const btnComplete   = document.getElementById("btnComplete");
+const btnPrev       = document.getElementById("btnPrev");
+const btnNext       = document.getElementById("btnNext");
+const celebration   = document.getElementById("celebration");
+
+// ─────────────────────────────────────────
+//  RENDER
+// ─────────────────────────────────────────
+function render() {
+  const lesson     = lessons[currentSlide];
+  const isLastSlide = currentSlide === lessons.length - 1;
+  const isDone     = completedSteps.includes(currentSlide);
+  const totalDone  = completedSteps.length;
+  const color      = lesson.color;
+
+  // Illustration
+  illustration.innerHTML = buildScene(lesson.step, lesson.scene);
+
+  // Lesson pill
+  lessonPill.style.background = `linear-gradient(135deg, ${color}, ${color}CC)`;
+
+  // Progress
+  progressFill.style.width      = `${(totalDone / lessons.length) * 100}%`;
+  progressFill.style.background = `linear-gradient(90deg, ${color}, ${color}99)`;
+  progressLabel.textContent     = `${totalDone}/${lessons.length}`;
+
+  // Step badge
+  stepBadge.textContent        = `Step ${lesson.step} of ${lessons.length}`;
+  stepBadge.style.background   = color;
+
+  // Done check
+  doneBadge.classList.toggle("visible", isDone);
+
+  // Text
+  stepTitle.textContent     = `Step ${lesson.step}: ${lesson.title}`;
+  stepTitle.style.color     = color;
+  stepSubtitle.textContent  = lesson.subtitle;
+  stepContent.textContent   = lesson.content;
+
+  // Pro tip
+  tipLabel.textContent     = "Pro Tip:";
+  tipLabel.style.color     = color;
+  tipText.textContent      = lesson.tip;
+  proTip.style.background  = `${color}15`;
+  proTip.style.border      = `1px solid ${color}40`;
+
+  // Dots
+  dotsWrap.innerHTML = "";
+  lessons.forEach((_, i) => {
+    const dot = document.createElement("button");
+    dot.className = "dot";
+    const done = completedSteps.includes(i);
+    const active = i === currentSlide;
+    dot.style.width      = (done || active) ? "20px" : "7px";
+    dot.style.background = done ? "#2ECC71" : active ? color : "#DDD";
+    dot.addEventListener("click", () => { currentSlide = i; render(); });
+    dotsWrap.appendChild(dot);
+  });
+
+  // Complete button
+  if (isDone) {
+    btnComplete.textContent = "✓ Step Completed!";
+    btnComplete.style.background  = "linear-gradient(135deg, #2ECC71, #27AE60)";
+    btnComplete.style.boxShadow   = "0 8px 20px #2ECC7140";
+  } else if (isLastSlide) {
+    btnComplete.textContent = "🏆 Complete Lesson!";
+    btnComplete.style.background  = `linear-gradient(135deg, ${color}, ${color}CC)`;
+    btnComplete.style.boxShadow   = `0 8px 20px ${color}40`;
+  } else {
+    btnComplete.textContent = "✓ Mark as Done & Next";
+    btnComplete.style.background  = `linear-gradient(135deg, ${color}, ${color}CC)`;
+    btnComplete.style.boxShadow   = `0 8px 20px ${color}40`;
+  }
+
+  // Prev / Next
+  btnPrev.disabled              = currentSlide === 0;
+  btnPrev.style.border          = "1.5px solid #E0E0E0";
+  btnPrev.style.color           = currentSlide === 0 ? "#CCC" : "#555";
+  btnPrev.style.background      = currentSlide === 0 ? "#F8F8F8" : "white";
+
+  btnNext.disabled              = isLastSlide;
+  btnNext.style.borderColor     = isLastSlide ? "#E0E0E0" : color;
+  btnNext.style.color           = isLastSlide ? "#CCC"    : color;
+  btnNext.style.background      = "white";
+}
+
+// ─────────────────────────────────────────
+//  EVENTS
+// ─────────────────────────────────────────
+btnComplete.addEventListener("click", () => {
+  const isDone      = completedSteps.includes(currentSlide);
+  const isLastSlide = currentSlide === lessons.length - 1;
+
+  if (!isDone) completedSteps.push(currentSlide);
+
+  if (isLastSlide) {
+    render();
+    celebration.classList.add("visible");
+    setTimeout(() => celebration.classList.remove("visible"), 3000);
+  } else {
+    currentSlide++;
+    render();
+  }
+});
+
+btnPrev.addEventListener("click", () => {
+  if (currentSlide > 0) { currentSlide--; render(); }
+});
+
+btnNext.addEventListener("click", () => {
+  if (currentSlide < lessons.length - 1) { currentSlide++; render(); }
+});
+
+// ─────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────
+render();
+</script>
+</body>
+</html>
